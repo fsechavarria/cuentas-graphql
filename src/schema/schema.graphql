@@ -1,0 +1,48 @@
+type Bill {
+  _id: ID!
+  price: Float!
+  isPaid: Boolean!
+  paymentDate: String
+  owner: User!
+  business: Business!
+  createdAt: String!
+  updatedAt: String
+}
+
+type Business {
+  _id: ID!
+  name: String!
+  bills: [Bill!]
+}
+
+type User {
+  _id: ID!
+  email: String!
+  password: String!
+  bills: [Bill!]
+}
+
+type Auth {
+  userId: ID!
+  email: String!
+  token: String!
+}
+
+type Query {
+  login(email: String!, password: String!): Auth!
+  bills(_id: ID): [Bill!]!
+  businesses(_id: ID): [Business!]!
+}
+
+type Mutation {
+  createUser(email: String!, password: String!): User
+  updateUser(_id: ID!, email: String, password: String): User
+
+  createBill(price: Float!, isPaid: Boolean, paymentDate: String, business: ID!): Bill
+  updateBill(_id: ID!, price: Float!, isPaid: Boolean!, paymentDate: String, business: ID!): Bill
+  deleteBill(_id: ID!): Bill
+  
+  createBusiness(name: String!): Business
+  updateBusiness(_id: ID!, name: String!): Business
+  deleteBusiness(_id: ID!): Business
+}
