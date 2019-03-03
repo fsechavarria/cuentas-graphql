@@ -20,12 +20,14 @@ type User {
   email: String!
   password: String!
   bills: [Bill!]
+  role: String!
 }
 
 type Auth {
   userId: ID!
   email: String!
   token: String!
+  role: String!
 }
 
 type Query {
@@ -35,8 +37,8 @@ type Query {
 }
 
 type Mutation {
-  createUser(email: String!, password: String!): User
-  updateUser(_id: ID!, email: String, password: String): User
+  createUser(email: String!, password: String!, role: String): User
+  updateUser(_id: ID!, email: String, password: String, role: String): User
 
   createBill(price: Float!, isPaid: Boolean, paymentDate: String, business: ID!): Bill
   updateBill(_id: ID!, price: Float!, isPaid: Boolean!, paymentDate: String, business: ID!): Bill

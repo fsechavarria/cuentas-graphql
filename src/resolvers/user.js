@@ -3,7 +3,11 @@ import bcrypt from 'bcrypt'
 
 import { authenticate } from '../helpers/isAuth'
 
-export const createUser = async (parent, { email, password }, { req }) => {
+export const createUser = async (
+  parent,
+  { email, password, role },
+  { req }
+) => {
   authenticate(req)
   try {
     const checkUser = await User.findOne({ email: email.trim() })
@@ -12,7 +16,11 @@ export const createUser = async (parent, { email, password }, { req }) => {
     }
 
     const hashedPassword = await bcrypt.hash(password.trim(), 15)
-    const user = new User({ email, password: hashedPassword })
+    const user = new User({
+      email,
+      password: hashedPassword,
+      role: role ? role : 'user'
+    })
     const result = await user.save()
     return result._doc
   } catch (err) {
@@ -20,7 +28,11 @@ export const createUser = async (parent, { email, password }, { req }) => {
   }
 }
 
-export const updateUser = async (parent, { email, password }, { req }) => {
+export const updateUser = async (
+  parent,
+  { email, password, role },
+  { req }
+) => {
   const _id = authenticate(req)
   try {
     const checkUser = await User.findOne({ email: email.trim() })
@@ -31,7 +43,11 @@ export const updateUser = async (parent, { email, password }, { req }) => {
     const hashedPassword = await bcrypt.hash(password.trim(), 15)
     const result = await User.findOneAndUpdate(
       { _id },
-      { email: email.trim(), password: hashedPassword }
+      {
+        email: email.trim(),
+        password: hashedPassword,
+        role: role ? role : 'user'
+      }
     )
 
     return result._doc

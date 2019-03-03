@@ -19,7 +19,8 @@ export const login = async (parent, { email, password }, { req }) => {
     return {
       token: jwt.sign({ userId: user._id.toString() }, process.env.SECRET),
       userId: user._id,
-      email: user.email
+      email: user.email,
+      role: user.role
     }
   } catch (err) {
     throw err.message
