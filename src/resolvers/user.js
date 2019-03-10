@@ -3,13 +3,9 @@ import bcrypt from 'bcrypt'
 
 import { authenticate } from '../helpers/isAuth'
 
-export const createUser = async (
-  parent,
-  { email, password, role },
-  { req }
-) => {
-  authenticate(req)
+export const createUser = async (parent, { email, password, role }, { req }) => {
   try {
+    authenticate(req)
     const checkUser = await User.findOne({ email: email.trim() })
     if (checkUser) {
       throw { message: 'User already exists' }
@@ -28,29 +24,39 @@ export const createUser = async (
   }
 }
 
-export const updateUser = async (
-  parent,
-  { email, password, role },
-  { req }
-) => {
-  const _id = authenticate(req)
+export const updateUser = async (parent, { _id, email, password, role }, { req }) => {
   try {
-    const checkUser = await User.findOne({ email: email.trim() })
+    authenticate(req)
+    const checkUser = await User.findById(_id)
     if (!checkUser) {
       throw { message: 'User not found' }
     }
+    let hashedPassword
+    let obj = {
+      email: email ? email.trim() : checkUser.email,
+      role: role ? role : checkUser.role
+    }
+    if (password) {
+      hashedPassword = await bcrypt.hash(password.trim(), 15)
+      obj.password = hashedPassword
+    }
+    await User.findByIdAndUpdate({ _id }, obj)
 
-    const hashedPassword = await bcrypt.hash(password.trim(), 15)
-    const result = await User.findOneAndUpdate(
-      { _id },
-      {
-        email: email.trim(),
-        password: hashedPassword,
-        role: role ? role : 'user'
-      }
-    )
+    return 'User updated successfully'
+  } catch (err) {
+    throw err.message
+  }
+}
 
-    return result._doc
+export const deleteUser = async (parent, { _id }, { req }) => {
+  try {
+    authenticate(req)
+    const checkUser = await User.findById(_id)
+    if (!checkUser) {
+      throw { message: 'User not found' }
+    }
+    await User.findByIdAndDelete(_id)
+    return 'User deleted successfully'
   } catch (err) {
     throw err.message
   }

@@ -31,9 +31,7 @@ mongoose
     useFindAndModify: false
   })
   .then(() => {
-    server.start(opts, ({ port }) =>
-      console.log(`Server is running on port ${port}`)
-    )
+    server.start(opts, ({ port }) => console.log(`Server is running on port ${port}`))
   })
   .catch(err => {
     console.log(err)

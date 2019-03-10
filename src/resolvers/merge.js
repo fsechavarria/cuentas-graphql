@@ -40,14 +40,12 @@ export const bills = async billsId => {
   })
 }
 
-export const transformBill = bill => {
+export const transformBill = async bill => {
   return {
     ...bill,
     business: business.bind(this, bill.business),
     owner: owner.bind(this, bill.owner),
-    paymentDate: bill.paymentDate
-      ? new Date(bill.paymentDate).toISOString()
-      : null,
+    paymentDate: bill.paymentDate ? new Date(bill.paymentDate).toISOString() : null,
     createdAt: new Date(bill.createdAt).toISOString(),
     updatedAt: bill.updatedAt ? new Date(bill.updatedAt).toISOString() : null
   }

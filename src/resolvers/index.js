@@ -1,13 +1,8 @@
-import {
-  createBusiness,
-  updateBusiness,
-  deleteBusiness,
-  businesses
-} from './business'
+import { createBusiness, updateBusiness, deleteBusiness, businesses } from './business'
 
 import { bills, createBill, updateBill, deleteBill } from './bill'
 
-import { createUser, updateUser } from './user'
+import { createUser, updateUser, deleteUser } from './user'
 
 import { login } from './auth'
 
@@ -18,6 +13,7 @@ export default {
     deleteBusiness,
     createUser,
     updateUser,
+    deleteUser,
     createBill,
     updateBill,
     deleteBill

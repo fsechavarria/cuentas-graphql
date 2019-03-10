@@ -3,14 +3,20 @@ import { transformBill } from './merge'
 import { authenticate } from '../helpers/isAuth'
 
 export const businesses = async (parent, { _id }, { req }) => {
-  authenticate(req)
   try {
+    authenticate(req)
     let result
     if (_id) {
-      result = [await Business.findById(_id)]
+      result = [
+        await Business.findById(_id)
+          .populate('bills')
+          .lean()
+      ]
       if (result[0] === null) result = []
     } else {
-      result = await Business.find().lean()
+      result = await Business.find()
+        .populate('bills')
+        .lean()
     }
     return result.map(business => {
       return {
@@ -24,8 +30,8 @@ export const businesses = async (parent, { _id }, { req }) => {
 }
 
 export const createBusiness = async (parent, { name }, { req }) => {
-  authenticate(req)
   try {
+    authenticate(req)
     const businessCheck = await Business.findOne({
       name: { $regex: name, $options: 'ig' }
     })
@@ -41,31 +47,28 @@ export const createBusiness = async (parent, { name }, { req }) => {
 }
 
 export const updateBusiness = async (parent, { _id, name }, { req }) => {
-  authenticate(req)
   try {
+    authenticate(req)
     const checkBusiness = await Business.findById({ _id })
     if (!checkBusiness) {
       throw { message: 'Business not found' }
     }
 
-    const result = await Business.findOneAndUpdate(
-      { _id },
-      { name: name.trim() }
-    )
-    return result._doc
+    await Business.findOneAndUpdate({ _id }, { name: name ? name.trim() : checkBusiness.name })
+    return 'Business updated successfully'
   } catch (err) {
     throw err.message
   }
 }
 
 export const deleteBusiness = async (parent, { _id }, { req }) => {
-  authenticate(req)
   try {
+    authenticate(req)
     const result = await Business.findOneAndDelete({ _id })
     if (!result) {
       throw { message: 'Business not found' }
     }
-    return result._doc
+    return 'Business deleted successfully'
   } catch (err) {
     throw err.message
   }
