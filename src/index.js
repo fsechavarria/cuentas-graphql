@@ -1,6 +1,8 @@
 import { GraphQLServer } from 'graphql-yoga'
 import mongoose from 'mongoose'
 
+import { authenticate } from '../src/middleware/isAuth'
+
 require('dotenv').config()
 
 import resolvers from './resolvers'
@@ -15,7 +17,7 @@ const opts = {
 }
 
 const context = req => ({
-  req: req.request
+  isAuth: authenticate(req.request)
 })
 
 const server = new GraphQLServer({
@@ -31,9 +33,7 @@ mongoose
     useFindAndModify: false
   })
   .then(() => {
-    server.start(opts, ({ port }) =>
-      console.log(`Server is running on port ${port}`)
-    )
+    server.start(opts, ({ port }) => console.log(`Server is running on port ${port}`))
   })
   .catch(err => {
     console.log(err)
