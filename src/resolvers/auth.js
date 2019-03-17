@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 
 import User from '../models/user'
 
+// TODO: Store token in db model field
 export const login = async (parent, { email, password }, { req }) => {
   try {
     const user = await User.findOne({ email }).lean()
