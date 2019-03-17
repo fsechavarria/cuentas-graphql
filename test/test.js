@@ -101,7 +101,7 @@ describe('GraphQL API', () => {
 
     it('Should update the new user', done => {
       user.email = 'edited@test.com'
-      user.role = 'user'
+      user.role = 'admin'
       request
         .post('/graphql')
         .send(updateUser(user._id, user.email, '1234', user.role))
