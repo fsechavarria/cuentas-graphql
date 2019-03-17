@@ -1,5 +1,6 @@
 import { GraphQLServer } from 'graphql-yoga'
 import mongoose from 'mongoose'
+import requestIp from 'request-ip'
 
 import { authenticate } from '../src/middleware/isAuth'
 
@@ -16,9 +17,12 @@ const opts = {
   }
 }
 
-const context = async req => ({
-  isAuth: await authenticate(req.request)
-})
+const context = async ({ request }) => {
+  return {
+    isAuth: await authenticate(request),
+    ip: requestIp.getClientIp(request)
+  }
+}
 
 const server = new GraphQLServer({
   typeDefs: __dirname + '/schema/schema.graphql',

@@ -1,9 +1,10 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import axios from 'axios'
 
 import User from '../models/user'
 
-export const login = async (parent, { email, password }, context) => {
+export const login = async (parent, { email, password }, { ip }) => {
   try {
     const user = await User.findOne({ email })
 
@@ -18,6 +19,15 @@ export const login = async (parent, { email, password }, context) => {
 
     const token = jwt.sign({ userId: user._id.toString() }, process.env.SECRET, { expiresIn: '1h' })
     user.token = token
+    user.last_login_date = new Date().toISOString()
+    user.last_login_ip = ip
+    await axios
+      .get(`${process.env.GEOLOCATION}`)
+      .then(res => {
+        user.last_login_location = `${res.data.country}, ${res.data.city}`
+      })
+      .catch(() => {})
+
     await user.save()
 
     return {
