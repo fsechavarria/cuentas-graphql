@@ -31,8 +31,15 @@ type Auth {
 
 type Query {
   login(email: String!, password: String!): Auth!
-  bills(_id: ID): [Bill!]!
-  businesses(_id: ID): [Business!]!
+
+  bill(_id: ID): Bill
+  bills: [Bill!]
+
+  business(_id: ID): Business
+  businesses: [Business!]
+
+  user(_id: ID!): User
+  users: [User!]
 }
 
 type Mutation {
