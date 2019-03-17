@@ -1,8 +1,8 @@
-import { createBusiness, updateBusiness, deleteBusiness, businesses } from './business'
+import { createBusiness, updateBusiness, deleteBusiness, businesses, business } from './business'
 
-import { bills, createBill, updateBill, deleteBill } from './bill'
+import { bill, bills, createBill, updateBill, deleteBill } from './bill'
 
-import { createUser, updateUser, deleteUser } from './user'
+import { user, users, createUser, updateUser, deleteUser } from './user'
 
 import { login } from './auth'
 
@@ -18,5 +18,15 @@ export default {
     updateBill,
     deleteBill
   },
-  Query: { login, businesses, bills }
+  Query: { login, user, users, business, businesses, bill, bills },
+  Bill: {
+    business,
+    owner: user
+  },
+  Business: {
+    bills
+  },
+  User: {
+    bills
+  }
 }

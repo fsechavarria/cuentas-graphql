@@ -1,37 +1,35 @@
 import Business from '../models/business'
-import { transformBill } from './merge'
-import { authenticate } from '../helpers/isAuth'
 
-export const businesses = async (parent, { _id }, { req }) => {
+export const business = async (parent, args, context) => {
   try {
-    authenticate(req)
-    let result
-    if (_id) {
-      result = [
-        await Business.findById(_id)
-          .populate('bills')
-          .lean()
-      ]
-      if (result[0] === null) result = []
-    } else {
-      result = await Business.find()
-        .populate('bills')
-        .lean()
-    }
-    return result.map(business => {
-      return {
-        ...business,
-        bills: business.bills.map(bill => transformBill(bill))
-      }
-    })
+    if (!context.isAuth) throw Error('Unauthorized')
+
+    const _id = parent ? parent.business : args._id
+    const result = await Business.findById(_id).lean()
+    return result
   } catch (err) {
     throw err.message
   }
 }
 
-export const createBusiness = async (parent, { name }, { req }) => {
+export const businesses = async (parent, args, context) => {
   try {
-    authenticate(req)
+    if (!context.isAuth) throw Error('Unauthorized')
+
+    const { _id } = args
+    if (_id) {
+      return await Business.findById(_id).lean()
+    }
+    return await Business.find({}).lean()
+  } catch (err) {
+    throw err.message
+  }
+}
+
+export const createBusiness = async (parent, { name }, context) => {
+  try {
+    if (!context.isAuth) throw Error('Unauthorized')
+
     const businessCheck = await Business.findOne({
       name: { $regex: name, $options: 'ig' }
     })
@@ -46,12 +44,13 @@ export const createBusiness = async (parent, { name }, { req }) => {
   }
 }
 
-export const updateBusiness = async (parent, { _id, name }, { req }) => {
+export const updateBusiness = async (parent, { _id, name }, context) => {
   try {
-    authenticate(req)
+    if (!context.isAuth) throw Error('Unauthorized')
+
     const checkBusiness = await Business.findById({ _id })
     if (!checkBusiness) {
-      throw { message: 'Business not found' }
+      throw Error('Business not found')
     }
 
     await Business.findOneAndUpdate({ _id }, { name: name ? name.trim() : checkBusiness.name })
@@ -61,12 +60,13 @@ export const updateBusiness = async (parent, { _id, name }, { req }) => {
   }
 }
 
-export const deleteBusiness = async (parent, { _id }, { req }) => {
+export const deleteBusiness = async (parent, { _id }, context) => {
   try {
-    authenticate(req)
+    if (!context.isAuth) throw Error('Unauthorized')
+
     const result = await Business.findOneAndDelete({ _id })
     if (!result) {
-      throw { message: 'Business not found' }
+      throw Error('Business not found')
     }
     return 'Business deleted successfully'
   } catch (err) {
