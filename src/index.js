@@ -16,8 +16,8 @@ const opts = {
   }
 }
 
-const context = req => ({
-  isAuth: authenticate(req.request)
+const context = async req => ({
+  isAuth: await authenticate(req.request)
 })
 
 const server = new GraphQLServer({

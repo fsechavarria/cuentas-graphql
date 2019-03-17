@@ -33,7 +33,7 @@ type Query {
   login(email: String!, password: String!): Auth!
 
   bill(_id: ID): Bill
-  bills: [Bill!]
+  bills(_id: ID): [Bill!]
 
   business(_id: ID): Business
   businesses: [Business!]

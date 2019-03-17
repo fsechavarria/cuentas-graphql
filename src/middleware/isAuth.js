@@ -1,15 +1,22 @@
 import jwt from 'jsonwebtoken'
+import User from '../models/user'
 
-// TODO: query database for user and create role based route protection
-export const authenticate = ({ headers }) => {
+export const authenticate = async ({ headers }) => {
   const Authorization = headers.Authorization || headers.authorization
 
   if (Authorization && Authorization.length > 0) {
     const token = Authorization.replace('Bearer ', '')
     try {
       const { userId } = jwt.verify(token, process.env.SECRET)
-      return userId
-    } catch (err) {}
+      const user = await User.findOne({ token }).lean()
+      const _id = user._id.toString()
+      if (!user || _id !== userId) {
+        throw new Error()
+      }
+      return { _id, role: user.role }
+    } catch (err) {
+      return false
+    }
   }
   return false
 }

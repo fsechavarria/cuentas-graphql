@@ -1,8 +1,9 @@
 import Business from '../models/business'
+import { allowAdmin } from '../helpers/authHelper'
 
-export const business = async (parent, args, context) => {
+export const business = async (parent, args, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!isAuth) throw Error('Unauthorized')
 
     const _id = parent ? parent.business : args._id
     const result = await Business.findById(_id).lean()
@@ -12,9 +13,9 @@ export const business = async (parent, args, context) => {
   }
 }
 
-export const businesses = async (parent, args, context) => {
+export const businesses = async (parent, args, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!isAuth) throw Error('Unauthorized')
 
     const { _id } = args
     if (_id) {
@@ -26,9 +27,9 @@ export const businesses = async (parent, args, context) => {
   }
 }
 
-export const createBusiness = async (parent, { name }, context) => {
+export const createBusiness = async (parent, { name }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!allowAdmin(isAuth)) throw Error('Unauthorized')
 
     const businessCheck = await Business.findOne({
       name: { $regex: name, $options: 'ig' }
@@ -44,9 +45,9 @@ export const createBusiness = async (parent, { name }, context) => {
   }
 }
 
-export const updateBusiness = async (parent, { _id, name }, context) => {
+export const updateBusiness = async (parent, { _id, name }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!allowAdmin(isAuth)) throw Error('Unauthorized')
 
     const checkBusiness = await Business.findById({ _id })
     if (!checkBusiness) {
@@ -60,9 +61,9 @@ export const updateBusiness = async (parent, { _id, name }, context) => {
   }
 }
 
-export const deleteBusiness = async (parent, { _id }, context) => {
+export const deleteBusiness = async (parent, { _id }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!allowAdmin(isAuth)) throw Error('Unauthorized')
 
     const result = await Business.findOneAndDelete({ _id })
     if (!result) {
