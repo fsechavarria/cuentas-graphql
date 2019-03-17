@@ -1,9 +1,10 @@
 import User from '../models/user'
 import bcrypt from 'bcrypt'
+import { allowAdmin } from '../helpers/authHelper'
 
-export const user = async (parent, args, context) => {
+export const user = async (parent, args, { isAuth }) => {
   try {
-    // if (!context.isAuth) throw Error('Unauthorized')
+    if (!isAuth) throw Error('Unauthorized')
 
     const _id = parent ? parent.owner : args._id
     return await User.findById(_id).lean()
@@ -12,9 +13,9 @@ export const user = async (parent, args, context) => {
   }
 }
 
-export const users = async (parent, args, context) => {
+export const users = async (parent, args, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!allowAdmin(isAuth)) throw Error('Unauthorized')
 
     return await User.find({}).lean()
   } catch (err) {
@@ -22,9 +23,9 @@ export const users = async (parent, args, context) => {
   }
 }
 
-export const createUser = async (parent, { email, password, role }, context) => {
+export const createUser = async (parent, { email, password, role }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!allowAdmin(isAuth)) throw Error('Unauthorized')
 
     const checkUser = await User.findOne({ email: { $regex: email.trim(), $options: 'ig' } })
     if (checkUser) {
@@ -44,9 +45,9 @@ export const createUser = async (parent, { email, password, role }, context) => 
   }
 }
 
-export const updateUser = async (parent, { _id, email, password, role }, context) => {
+export const updateUser = async (parent, { _id, email, password, role }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!isAuth) throw Error('Unauthorized')
 
     const checkUser = await User.findById(_id)
     if (!checkUser) {
@@ -69,9 +70,9 @@ export const updateUser = async (parent, { _id, email, password, role }, context
   }
 }
 
-export const deleteUser = async (parent, { _id }, context) => {
+export const deleteUser = async (parent, { _id }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!allowAdmin(isAuth)) throw Error('Unauthorized')
 
     const checkUser = await User.findById(_id)
     if (!checkUser) {

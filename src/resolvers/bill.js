@@ -2,10 +2,11 @@ import Bill from '../models/bill'
 import User from '../models/user'
 import Business from '../models/business'
 import { transformBill } from '../helpers/billHelper'
+import { allowAdmin } from '../helpers/authHelper'
 
-export const bill = async (parent, { _id }, context) => {
+export const bill = async (parent, { _id }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!isAuth) throw Error('Unauthorized')
 
     const result = await Bill.findById(_id).lean()
     return transformBill(result)
@@ -14,16 +15,21 @@ export const bill = async (parent, { _id }, context) => {
   }
 }
 
-export const bills = async (parent, args, context) => {
+export const bills = async (parent, args, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!isAuth) throw Error('Unauthorized')
 
-    const _id = parent ? parent._id : args._id
     let result
-    if (_id) {
-      result = await Bill.find({ $or: [{ _id }, { owner: _id }, { business: _id }] }).lean()
+    if (allowAdmin(isAuth)) {
+      const _id = parent ? parent._id : args._id
+      if (_id) {
+        result = await Bill.find({ $or: [{ _id }, { owner: _id }, { business: _id }] }).lean()
+      } else {
+        result = await Bill.find({}).lean()
+      }
     } else {
-      result = await Bill.find({}).lean()
+      const { _id } = isAuth
+      result = await Bill.find({ owner: _id }).lean()
     }
     return result.map(bill => transformBill(bill))
   } catch (err) {
@@ -31,11 +37,11 @@ export const bills = async (parent, args, context) => {
   }
 }
 
-export const createBill = async (parent, { price, isPaid, paymentDate, business }, context) => {
+export const createBill = async (parent, { price, isPaid, paymentDate, business }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!isAuth) throw Error('Unauthorized')
 
-    const userId = context.isAuth
+    const userId = isAuth
     const user = await User.findById(userId)
     if (!user) {
       throw Error('User does not exist')
@@ -59,9 +65,9 @@ export const createBill = async (parent, { price, isPaid, paymentDate, business 
   }
 }
 
-export const updateBill = async (parent, { _id, price, isPaid, paymentDate, business }, context) => {
+export const updateBill = async (parent, { _id, price, isPaid, paymentDate, business }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!isAuth) throw Error('Unauthorized')
 
     const billCheck = await Bill.findById(_id)
     if (!billCheck) {
@@ -100,9 +106,9 @@ export const updateBill = async (parent, { _id, price, isPaid, paymentDate, busi
   }
 }
 
-export const deleteBill = async (parent, { _id }, context) => {
+export const deleteBill = async (parent, { _id }, { isAuth }) => {
   try {
-    if (!context.isAuth) throw Error('Unauthorized')
+    if (!isAuth) throw Error('Unauthorized')
 
     const bill = await Bill.findById(_id)
     if (!bill) {
