@@ -28,6 +28,17 @@ module.exports = {
     }
   `
   },
+  findUser: id => {
+    return {
+      query: `{
+        user(_id: "${id}") {
+          _id
+          email
+          role
+        }
+      }`
+    }
+  },
   updateUser: (id, email, password, role) => {
     return {
       query: `
@@ -75,7 +86,7 @@ module.exports = {
   findBusiness: id => {
     return {
       query: `{
-        businesses(_id: "${id}") {
+        business(_id: "${id}") {
           _id
           name
         }
@@ -115,7 +126,7 @@ module.exports = {
   findBill: id => {
     return {
       query: `{
-        bills(_id: "${id}") {
+        bill(_id: "${id}") {
           price
           isPaid
           paymentDate

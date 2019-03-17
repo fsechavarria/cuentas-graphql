@@ -7,6 +7,7 @@ const {
   createUser,
   newLogin,
   updateUser,
+  findUser,
   deleteUser,
   createBusiness,
   deleteBusiness,
@@ -73,6 +74,9 @@ describe('GraphQL API', () => {
           expect(createUser).not.equal(null)
           expect(createUser.email).to.equal('test@test.com')
           expect(createUser.role).to.equal('admin')
+          user._id = createUser._id
+          user.email = createUser.email
+          user.role = createUser.role
           done()
         })
     }).timeout(5000)
@@ -85,21 +89,22 @@ describe('GraphQL API', () => {
         .end((err, res) => {
           if (err) done(err)
           const { login } = res.body.data
-          expect(login.email).to.equal('test@test.com')
+          expect(login.email).to.equal(user.email)
           const { userId } = jwt.verify(login.token, process.env.SECRET)
           expect(userId).to.equal(login.userId)
-          user._id = userId
+          expect(userId).to.equal(user._id)
           user.token = login.token
-          user.email = 'test@test.com'
           bill.owner._id = userId
           done()
         })
     }).timeout(5000)
 
     it('Should update the new user', done => {
+      user.email = 'edited@test.com'
+      user.role = 'user'
       request
         .post('/graphql')
-        .send(updateUser(user._id))
+        .send(updateUser(user._id, user.email, '1234', user.role))
         .set('Authorization', `Bearer ${user.token}`)
         .expect(200)
         .end((err, res) => {
@@ -108,6 +113,25 @@ describe('GraphQL API', () => {
           expect(errors).to.satisfy(err => err === undefined || err === null)
           expect(updateUser).to.not.equal(null)
           expect(updateUser).to.equal('User updated successfully')
+          done()
+        })
+    }).timeout(5000)
+
+    it('Should find the updated user', done => {
+      request
+        .post('/graphql')
+        .send(findUser(user._id))
+        .set('Authorization', `Bearer ${user.token}`)
+        .expect(200)
+        .end((err, res) => {
+          if (err) done(err)
+          const errors = res.body.data.errors
+          const usr = res.body.data.user
+          expect(errors).to.satisfy(err => err === undefined || err === null)
+          expect(usr).to.not.equal(null)
+          expect(usr._id).to.equal(user._id)
+          expect(usr.email).to.equal(user.email)
+          expect(usr.role).to.equal(user.role)
           done()
         })
     }).timeout(5000)
@@ -159,11 +183,10 @@ describe('GraphQL API', () => {
         .expect(200)
         .end((err, res) => {
           if (err) done(err)
-          const { businesses, errors } = res.body.data
+          const { business, errors } = res.body.data
           expect(errors).to.satisfy(err => err === undefined || err === null)
-          expect(businesses).to.not.equal(null)
-          expect(businesses.length).to.be.greaterThan(0)
-          expect(businesses[0]).to.deep.equal(business)
+          expect(business).to.not.equal(null)
+          expect(business).to.deep.equal(business)
           done()
         })
     })
@@ -212,14 +235,13 @@ describe('GraphQL API', () => {
         .expect(200)
         .end((err, res) => {
           if (err) done(err)
-          const { bills, errors } = res.body.data
+          const { bill, errors } = res.body.data
           expect(errors).to.satisfy(err => err === undefined || err === null)
-          expect(bills).to.not.equal(null)
-          expect(bills.length).to.not.equal(0)
-          expect(bills[0].isPaid).to.equal(true)
-          expect(bills[0].paymentDate).to.not.equal(null)
-          expect(bills[0].price).to.equal(1500)
-          expect(bills[0].updatedAt).to.not.equal(null)
+          expect(bill).to.not.equal(null)
+          expect(bill.isPaid).to.equal(true)
+          expect(bill.paymentDate).to.not.equal(null)
+          expect(bill.price).to.equal(1500)
+          expect(bill.updatedAt).to.not.equal(null)
           done()
         })
     }).timeout(5000)
