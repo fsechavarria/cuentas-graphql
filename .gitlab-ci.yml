@@ -11,4 +11,5 @@ test:
     script:
         - npm i npm@latest -g
         - npm i
+        - npm run start
         - npm run test
