@@ -1,7 +1,7 @@
 image: node:10.15.1
 
 variables:
-     MONGODB: mongo
+     MONGODB: mongodb://mongo:27017/app
 
 services:
     - mongo
