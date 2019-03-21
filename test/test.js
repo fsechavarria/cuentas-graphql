@@ -53,22 +53,6 @@ describe('GraphQL API', () => {
     })
   })
   describe('Users', () => {
-    // it('Should Login and return email and token with userId', done => {
-    //   request
-    //     .post('/graphql')
-    //     .send(login)
-    //     .expect(200)
-    //     .end((err, res) => {
-    //       if (err) done(err)
-    //       const { login } = res.body.data
-    //       expect(login.email).to.equal(process.env.EMAIL)
-    //       const { userId } = jwt.verify(login.token, process.env.SECRET)
-    //       expect(userId).to.equal(login.userId)
-    //       user.token = login.token
-    //       done()
-    //     })
-    // }).timeout(5000)
-
     it('Should create an user', done => {
       request
         .post('/graphql')
