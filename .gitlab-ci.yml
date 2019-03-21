@@ -1,0 +1,12 @@
+stages:
+    - test
+    - deploy
+    
+test:
+    stage: test
+    services:
+        - mongo:latest
+    script:
+        - npm i npm@latest -g
+        - npm i
+        - npm run test
