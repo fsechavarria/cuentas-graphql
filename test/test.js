@@ -46,7 +46,6 @@ const bill = {
 describe('GraphQL API', () => {
   describe('Users', () => {
     it('Should Login and return email and token with userId', done => {
-      // test commit
       request
         .post('/graphql')
         .send(login)
