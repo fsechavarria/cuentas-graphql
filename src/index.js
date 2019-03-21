@@ -30,15 +30,20 @@ const server = new GraphQLServer({
   context
 })
 
-mongoose
-  .connect(process.env.MONGODB, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-  })
-  .then(() => {
-    server.start(opts, ({ port }) => console.log(`Server is running on port ${port}`))
-  })
-  .catch(err => {
-    console.log(err)
-  })
+const app = async () =>
+  await mongoose
+    .connect(process.env.MONGODB, {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false
+    })
+    .then(() => {
+      return server.start(opts, ({ port }) =>
+        console.log(`\nServer is running on port ${port} \n\nRunning Enviornment: ${process.env.NODE_ENV}\n\n`)
+      )
+    })
+    .catch(err => {
+      console.log(err)
+    })
+
+module.exports = app()

@@ -25,7 +25,7 @@ export const users = async (parent, args, { isAuth }) => {
 
 export const createUser = async (parent, { email, password, role }, { isAuth }) => {
   try {
-    if (!allowAdmin(isAuth)) throw Error('Unauthorized')
+    if (!allowAdmin(isAuth) && process.env.NODE_ENV !== 'test') throw Error('Unauthorized')
 
     const checkUser = await User.findOne({ email: { $regex: email.trim(), $options: 'ig' } })
     if (checkUser) {
