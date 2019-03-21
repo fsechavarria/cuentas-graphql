@@ -1,3 +1,5 @@
+image: node:10.15.1
+
 stages:
     - test
     - deploy
