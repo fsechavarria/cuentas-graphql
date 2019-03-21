@@ -1,6 +1,6 @@
 require('dotenv').config()
 const expect = require('chai').expect
-const request = require('supertest')(process.env.TEST_URL)
+const request = require('supertest')(`http://localhost:${process.env.PORT || 3001}`)
 const jwt = require('jsonwebtoken')
 const {
   login,
@@ -43,7 +43,7 @@ const bill = {
   }
 }
 
-describe('GraphQL API', () => {
+describe('GraphQL API', async () => {
   describe('Users', () => {
     it('Should Login and return email and token with userId', done => {
       request
