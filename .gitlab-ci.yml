@@ -1,15 +1,19 @@
 image: node:10.15.1
 
 stages:
+    - build
     - test
-    - deploy
     
-test:
-    stage: test
+build:
+    stage: build
     services:
         - mongo:latest
     script:
-        - npm i npm@latest -g
-        - npm i
-        - npm run start
+      - npm install npm@latest -g
+      - npm install
+      - node ./src/index.js
+
+test:
+    stage: test
+    script:
         - npm run test
