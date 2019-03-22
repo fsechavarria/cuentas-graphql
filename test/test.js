@@ -64,7 +64,7 @@ describe('GraphQL API', () => {
           const { createUser, errors } = res.body.data
           expect(errors).to.satisfy(err => err === undefined || err === null)
           expect(createUser).not.equal(null)
-          expect(createUser.email).to.equal('test@test.com') // asdf
+          expect(createUser.email).to.equal('test@test.com')
           expect(createUser.role).to.equal('admin')
           user._id = createUser._id
           user.email = createUser.email
