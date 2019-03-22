@@ -1,14 +1,18 @@
 image: node:10.15.1
 
-stages:
-    - test
-    - deploy
-    
+variables:
+     MONGODB: mongodb://mongo:27017/app
+
+services:
+    - mongo
+
+cache:
+    paths:
+    - node_modules/
+
 test:
-    stage: test
-    services:
-        - mongo:latest
     script:
-        - npm i npm@latest -g
-        - npm i
+        - npm install
         - npm run test
+    variables:
+        SECRET: secret

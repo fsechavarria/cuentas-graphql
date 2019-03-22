@@ -1,5 +1,8 @@
 import { GraphQLServer } from 'graphql-yoga'
 import mongoose from 'mongoose'
+import requestIp from 'request-ip'
+
+import { authenticate } from '../src/middleware/isAuth'
 
 require('dotenv').config()
 
@@ -14,9 +17,12 @@ const opts = {
   }
 }
 
-const context = req => ({
-  req: req.request
-})
+const context = async ({ request }) => {
+  return {
+    isAuth: await authenticate(request),
+    ip: requestIp.getClientIp(request)
+  }
+}
 
 const server = new GraphQLServer({
   typeDefs: __dirname + '/schema/schema.graphql',
@@ -24,17 +30,20 @@ const server = new GraphQLServer({
   context
 })
 
-mongoose
-  .connect(process.env.MONGODB, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-  })
-  .then(() => {
-    server.start(opts, ({ port }) =>
-      console.log(`Server is running on port ${port}`)
-    )
-  })
-  .catch(err => {
-    console.log(err)
-  })
+const app = async () =>
+  await mongoose
+    .connect(process.env.MONGODB, {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false
+    })
+    .then(() => {
+      return server.start(opts, ({ port }) =>
+        console.log(`\nServer is running on port ${port} \n\nRunning Enviornment: ${process.env.NODE_ENV}\n\n`)
+      )
+    })
+    .catch(err => {
+      console.log(err)
+    })
+
+module.exports = app()

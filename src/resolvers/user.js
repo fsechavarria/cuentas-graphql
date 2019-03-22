@@ -1,23 +1,40 @@
 import User from '../models/user'
 import bcrypt from 'bcrypt'
+import { allowAdmin } from '../helpers/authHelper'
 
-import { authenticate } from '../helpers/isAuth'
-
-export const createUser = async (
-  parent,
-  { email, password, role },
-  { req }
-) => {
-  authenticate(req)
+export const user = async (parent, args, { isAuth }) => {
   try {
-    const checkUser = await User.findOne({ email: email.trim() })
+    if (!isAuth) throw Error('Unauthorized')
+
+    const _id = parent ? parent.owner : args._id
+    return await User.findById(_id).lean()
+  } catch (err) {
+    throw err.message
+  }
+}
+
+export const users = async (parent, args, { isAuth }) => {
+  try {
+    if (!allowAdmin(isAuth)) throw Error('Unauthorized')
+
+    return await User.find({}).lean()
+  } catch (err) {
+    throw err.message
+  }
+}
+
+export const createUser = async (parent, { email, password, role }, { isAuth }) => {
+  try {
+    if (!allowAdmin(isAuth) && process.env.NODE_ENV !== 'test') throw Error('Unauthorized')
+
+    const checkUser = await User.findOne({ email: { $regex: email.trim(), $options: 'ig' } })
     if (checkUser) {
-      throw { message: 'User already exists' }
+      throw Error('User already exists')
     }
 
     const hashedPassword = await bcrypt.hash(password.trim(), 15)
     const user = new User({
-      email,
+      email: email.trim(),
       password: hashedPassword,
       role: role ? role : 'user'
     })
@@ -28,29 +45,41 @@ export const createUser = async (
   }
 }
 
-export const updateUser = async (
-  parent,
-  { email, password, role },
-  { req }
-) => {
-  const _id = authenticate(req)
+export const updateUser = async (parent, { _id, email, password, role }, { isAuth }) => {
   try {
-    const checkUser = await User.findOne({ email: email.trim() })
+    if (!isAuth) throw Error('Unauthorized')
+
+    const checkUser = await User.findById(_id)
     if (!checkUser) {
-      throw { message: 'User not found' }
+      throw Error('User not found')
     }
+    let hashedPassword
+    let obj = {
+      email: email ? email.trim() : checkUser.email,
+      role: role ? role : checkUser.role
+    }
+    if (password) {
+      hashedPassword = await bcrypt.hash(password.trim(), 15)
+      obj.password = hashedPassword
+    }
+    await User.findByIdAndUpdate({ _id }, obj)
 
-    const hashedPassword = await bcrypt.hash(password.trim(), 15)
-    const result = await User.findOneAndUpdate(
-      { _id },
-      {
-        email: email.trim(),
-        password: hashedPassword,
-        role: role ? role : 'user'
-      }
-    )
+    return 'User updated successfully'
+  } catch (err) {
+    throw err.message
+  }
+}
 
-    return result._doc
+export const deleteUser = async (parent, { _id }, { isAuth }) => {
+  try {
+    if (!allowAdmin(isAuth)) throw Error('Unauthorized')
+
+    const checkUser = await User.findById(_id)
+    if (!checkUser) {
+      throw Error('User not found')
+    }
+    await User.findByIdAndDelete(_id)
+    return 'User deleted successfully'
   } catch (err) {
     throw err.message
   }
