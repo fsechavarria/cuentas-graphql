@@ -1,13 +1,16 @@
 image: node:10.15.1
 
-stages:
-    - test
+variables:
+     MONGODB: mongodb://mongo:27017/app
+
+services:
+    - mongo
+
+cache:
+    paths:
+    - node_modules/
 
 test:
-    stage: test
     script:
         - npm install
-        - mongod
         - npm run test
-    variables:
-        MONGODB: 'mongodb://localhost/test'
