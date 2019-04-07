@@ -1,11 +1,14 @@
+import '@babel/polyfill'
 import { GraphQLServer } from 'graphql-yoga'
 import mongoose from 'mongoose'
 import requestIp from 'request-ip'
 
-import { authenticate } from '../src/middleware/isAuth'
+import { authenticate } from './middleware/isAuth'
+import { parseFilter } from './middleware/parseFilter'
 
 require('dotenv').config()
 
+import schema from './schema/schema.graphql.js'
 import resolvers from './resolvers'
 
 const opts = {
@@ -14,18 +17,20 @@ const opts = {
   cors: {
     credentials: true,
     origin: ['http://localhost:8000', 'http://localhost:3000']
-  }
+  },
+  playground: process.env.NODE_ENV === 'development' ? '/' : false
 }
 
 const context = async ({ request }) => {
   return {
     isAuth: await authenticate(request),
+    filter: parseFilter(request),
     ip: requestIp.getClientIp(request)
   }
 }
 
 const server = new GraphQLServer({
-  typeDefs: __dirname + '/schema/schema.graphql',
+  typeDefs: schema,
   resolvers,
   context
 })
