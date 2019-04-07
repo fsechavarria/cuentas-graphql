@@ -13,11 +13,11 @@ export const user = async (parent, args, { isAuth }) => {
   }
 }
 
-export const users = async (parent, args, { isAuth }) => {
+export const users = async (parent, args, { isAuth, filter }) => {
   try {
     if (!allowAdmin(isAuth)) throw Error('Unauthorized')
 
-    return await User.find({}).lean()
+    return await User.find(filter || {}).lean()
   } catch (err) {
     throw err.message
   }

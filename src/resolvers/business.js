@@ -13,15 +13,14 @@ export const business = async (parent, args, { isAuth }) => {
   }
 }
 
-export const businesses = async (parent, args, { isAuth }) => {
+export const businesses = async (parent, args, { isAuth, filter }) => {
   try {
     if (!isAuth) throw Error('Unauthorized')
-
     const { _id } = args
     if (_id) {
       return await Business.findById(_id).lean()
     }
-    return await Business.find({}).lean()
+    return await Business.find(filter || {}).lean()
   } catch (err) {
     throw err.message
   }

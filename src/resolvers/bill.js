@@ -3,6 +3,7 @@ import User from '../models/user'
 import Business from '../models/business'
 import { transformBill } from '../helpers/billHelper'
 import { allowAdmin } from '../helpers/authHelper'
+import { merge } from 'lodash'
 
 export const bill = async (parent, { _id }, { isAuth }) => {
   try {
@@ -15,7 +16,7 @@ export const bill = async (parent, { _id }, { isAuth }) => {
   }
 }
 
-export const bills = async (parent, args, { isAuth }) => {
+export const bills = async (parent, args, { isAuth, filter }) => {
   try {
     if (!isAuth) throw Error('Unauthorized')
 
@@ -23,13 +24,13 @@ export const bills = async (parent, args, { isAuth }) => {
     if (allowAdmin(isAuth)) {
       const _id = parent ? parent._id : args._id
       if (_id) {
-        result = await Bill.find({ $or: [{ _id }, { owner: _id }, { business: _id }] }).lean()
+        result = await Bill.find(merge(filter, { $or: [{ _id }, { owner: _id }, { business: _id }] })).lean()
       } else {
-        result = await Bill.find({}).lean()
+        result = await Bill.find(filter || {}).lean()
       }
     } else {
       const { _id } = isAuth
-      result = await Bill.find({ owner: _id }).lean()
+      result = await Bill.find(merge(filter, { owner: _id })).lean()
     }
     return result.map(bill => transformBill(bill))
   } catch (err) {
@@ -37,11 +38,10 @@ export const bills = async (parent, args, { isAuth }) => {
   }
 }
 
-export const createBill = async (parent, { price, isPaid, paymentDate, business }, { isAuth }) => {
+export const createBill = async (parent, { owner, price, isPaid, paymentDate, business }, { isAuth }) => {
   try {
     if (!isAuth) throw Error('Unauthorized')
-
-    const userId = isAuth
+    const userId = allowAdmin(isAuth) ? owner || isAuth : isAuth
     const user = await User.findById(userId)
     if (!user) {
       throw Error('User does not exist')
